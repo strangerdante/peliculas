@@ -2,7 +2,14 @@
 
 Este es un proyecto desarrollado con Next.js, utilizando Swiper para crear carruseles interactivos y Tailwind CSS para estilos rápidos y personalizables. Está desplegado en Netlify.
 
-🔗 Ver Proyecto en Vivo
+
+## 🚀Pagina online
+
+Version online desplegada en **Netlify**,
+
+> [https://vue-demon-slayer.netlify.app](https://peliculas-next.netlify.app)
+
+
 🚀 Comenzando
 
 Sigue estos pasos para levantar el servidor de desarrollo en tu máquina local:
@@ -10,11 +17,8 @@ Sigue estos pasos para levantar el servidor de desarrollo en tu máquina local:
 bash
 
 npm run dev
-# o
 yarn dev
-# o
 pnpm dev
-# o
 bun dev
 
 Abre http://localhost:3000 en tu navegador para ver el resultado.
@@ -54,8 +58,5 @@ bash
     Swiper - Aprende más sobre cómo implementar carruseles en tu proyecto.
     Tailwind CSS - Documentación oficial para aprender a usar Tailwind CSS.
 
-🚀 Despliegue
 
-El proyecto está desplegado en Netlify. Puedes ver el proyecto en vivo aquí: Películas Next.js.
 
-Si deseas desplegar tu propio proyecto, sigue la documentación de despliegue de Next.js en este enlace.
