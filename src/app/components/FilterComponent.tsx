@@ -31,7 +31,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         <div className="flex-1">
           <label
             htmlFor="genre-select"
-            className="block mb-2 text-sm font-medium dark:text-gray-300"
+            className="block mb-2 text-sm font-medium text-gray-300"
           >
             Filtrar por Género
           </label>
@@ -39,7 +39,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
             id="genre-select"
             value={selectedGenre}
             onChange={handleGenreChange}
-            className="dark:bg-neutral-700 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+            className="bg-neutral-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
           >
             <option value="">Todos los géneros</option>
             <option value="28">Acción</option>
@@ -66,7 +66,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         <div className="flex-1">
           <label
             htmlFor="search-input"
-            className="block mb-2 text-sm font-medium dark:text-gray-300"
+            className="block mb-2 text-sm font-medium text-gray-300"
           >
             Buscar por palabra clave
           </label>
@@ -76,7 +76,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
             value={searchKeyword}
             onChange={handleSearchChange}
             placeholder="Buscar películas..."
-            className="dark:bg-neutral-700 bg-gray-200  dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+            className="bg-neutral-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
           />
         </div>
       </div>

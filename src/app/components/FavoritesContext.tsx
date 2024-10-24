@@ -15,6 +15,7 @@ interface FavoritesContextType {
   addToFavorites: (movie: Movie) => void;
   removeFromFavorites: (movieId: number) => void;
   isMovieFavorite: (movieId: number) => boolean;
+  clearAllFavorites: () => void;
 }
 
 const FavoritesContext = createContext<FavoritesContextType | undefined>(
@@ -27,35 +28,66 @@ export const FavoritesProvider = ({
   children: React.ReactNode;
 }) => {
   const [favorites, setFavorites] = useState<Movie[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Cargar favoritos del localStorage al iniciar
   useEffect(() => {
-    const storedFavorites = localStorage.getItem("movieFavorites");
-    if (storedFavorites) {
-      setFavorites(JSON.parse(storedFavorites));
+    try {
+      const storedFavorites = localStorage.getItem("movieFavorites");
+      if (storedFavorites) {
+        const parsedFavorites = JSON.parse(storedFavorites);
+        if (Array.isArray(parsedFavorites)) {
+          setFavorites(parsedFavorites);
+        }
+      }
+    } catch (error) {
+      console.error("Error al cargar favoritos del localStorage:", error);
+      // Si hay error, limpiar localStorage corrupto
+      localStorage.removeItem("movieFavorites");
+    } finally {
+      setIsLoaded(true);
     }
   }, []);
 
-  // Guardar favoritos en localStorage cuando cambien
+  // Guardar favoritos en localStorage cuando cambien (solo después de cargar)
   useEffect(() => {
-    localStorage.setItem("movieFavorites", JSON.stringify(favorites));
-  }, [favorites]);
+    if (isLoaded) {
+      try {
+        localStorage.setItem("movieFavorites", JSON.stringify(favorites));
+      } catch (error) {
+        console.error("Error al guardar favoritos en localStorage:", error);
+      }
+    }
+  }, [favorites, isLoaded]);
 
   const addToFavorites = (movie: Movie) => {
     setFavorites((prev) => {
       if (!prev.some((fav) => fav.id === movie.id)) {
-        return [...prev, movie];
+        const newFavorites = [...prev, movie];
+        console.log(`Película "${movie.title}" agregada a favoritos`);
+        return newFavorites;
       }
       return prev;
     });
   };
 
   const removeFromFavorites = (movieId: number) => {
-    setFavorites((prev) => prev.filter((movie) => movie.id !== movieId));
+    setFavorites((prev) => {
+      const movieToRemove = prev.find((movie) => movie.id === movieId);
+      if (movieToRemove) {
+        console.log(`Película "${movieToRemove.title}" eliminada de favoritos`);
+      }
+      return prev.filter((movie) => movie.id !== movieId);
+    });
   };
 
   const isMovieFavorite = (movieId: number) => {
     return favorites.some((movie) => movie.id === movieId);
+  };
+
+  const clearAllFavorites = () => {
+    setFavorites([]);
+    console.log("Todos los favoritos han sido eliminados");
   };
 
   return (
@@ -65,6 +97,7 @@ export const FavoritesProvider = ({
         addToFavorites,
         removeFromFavorites,
         isMovieFavorite,
+        clearAllFavorites,
       }}
     >
       {children}

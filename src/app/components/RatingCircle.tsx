@@ -24,9 +24,14 @@ const RatingCircle: React.FC<RatingCircleProps> = ({ rating, size = 50 }) => {
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
-      <svg width={size} height={size}>
+      {/* Fondo oscuro translúcido */}
+      <div 
+        className="absolute inset-0 bg-black bg-opacity-60 rounded-full backdrop-blur-sm"
+        style={{ width: size, height: size }}
+      />
+      <svg width={size} height={size} className="relative z-10">
         <circle
-          className="stroke-gray-200 dark:stroke-gray-700"
+          className="stroke-gray-600"
           strokeWidth={strokeWidth}
           fill="none"
           r={radius}
@@ -47,7 +52,7 @@ const RatingCircle: React.FC<RatingCircleProps> = ({ rating, size = 50 }) => {
         />
       </svg>
       <div
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold text-gray-500 dark:text-white"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold text-white z-20"
         style={{ fontSize: `${size * 0.3}px` }}
       >
         {Math.round(normalizedRating * 10)}%

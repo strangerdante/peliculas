@@ -32,6 +32,9 @@ export default function Home() {
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Configuración de películas por página (3 filas × 6 columnas en desktop)
+  const moviesPerPage = 18;
+
   // Hook personalizado para manejar favoritos
   const { addToFavorites, removeFromFavorites, isMovieFavorite } =
     useFavorites();
@@ -53,12 +56,8 @@ export default function Home() {
 
       const response = await axios.get(url);
 
-      if (currentPage === 1) {
-        setMovies(response.data.results);
-      } else {
-        setMovies((prevMovies) => [...prevMovies, ...response.data.results]);
-      }
-
+      // Siempre reemplazamos las películas para mostrar solo la página actual
+      setMovies(response.data.results);
       setTotalPages(response.data.total_pages);
       setIsLoading(false);
     } catch (error) {
@@ -75,8 +74,9 @@ export default function Home() {
         .includes(searchKeyword.toLowerCase());
       return matchesKeyword;
     });
-    setFilteredMovies(filtered);
-  }, [searchKeyword, movies]);
+    // Limitamos a las películas por página configuradas (3 filas en desktop)
+    setFilteredMovies(filtered.slice(0, moviesPerPage));
+  }, [searchKeyword, movies, moviesPerPage]);
 
   // Manejadores de eventos
   const handleGenreChange = (genre: string) => {
@@ -97,9 +97,15 @@ export default function Home() {
     setSelectedMovie(null);
   };
 
-  const loadMoreMovies = () => {
+  const goToNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage((prevPage) => prevPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prevPage) => prevPage - 1);
     }
   };
 
@@ -113,73 +119,76 @@ export default function Home() {
   };
 
   return (
-    <div className="dark:bg-gray-800 min-h-screen">
-      <div className="container mx-auto px-4 py-8">
-        <Menu />
-        <Carousel />
+    <div className="bg-gray-800 min-h-screen">
+      <Menu />
+      <Carousel />
+      <div className="container mx-auto px-4 pt-8 pb-8">
         <FilterComponent
           onGenreChange={handleGenreChange}
           onSearchChange={handleSearchChange}
         />
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-6">
+        
+        {/* Grid de películas en filas */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 mb-8">
           {filteredMovies.map((movie) => (
             <div
               key={movie.id}
-              className="bg-gray-200 dark:bg-gray-600 rounded-lg shadow-md overflow-hidden cursor-pointer transform transition duration-200"
+              className="w-full cursor-pointer transform transition duration-300 hover:scale-105"
               onClick={() => handleMovieClick(movie)}
             >
-              <div className="relative h-64 w-full">
+              <div className="relative h-80 w-full rounded-xl overflow-hidden shadow-2xl">
                 <Image
                   src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                   alt={movie.title}
                   fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
                   className="object-cover"
-                  priority={movie.id <= 4} // Prioriza la carga de las primeras 4 imágenes
+                  priority={movie.id <= 8}
                 />
+                {/* Etiqueta del año */}
+                <div className="absolute bottom-3 right-3 bg-yellow-400 text-black px-2 py-1 rounded-md text-xs font-bold shadow-lg">
+                  {new Date(movie.release_date).getFullYear()}
+                </div>
+                {/* Botón de favoritos */}
+                <button
+                  onClick={(e) => handleFavoriteClick(e, movie)}
+                  className="absolute top-3 right-3 p-2 bg-black bg-opacity-60 rounded-full transition-all duration-200 hover:scale-110 hover:bg-opacity-80 backdrop-blur-sm"
+                  title={
+                    isMovieFavorite(movie.id)
+                      ? "Quitar de favoritos"
+                      : "Agregar a favoritos"
+                  }
+                >
+                  <Image
+                    src={
+                      isMovieFavorite(movie.id)
+                        ? "/favorite-filled.svg"
+                        : "/favorite.svg"
+                    }
+                    alt="Favorite icon"
+                    className="invert transition-opacity duration-200"
+                    width={18}
+                    height={18}
+                    priority
+                  />
+                </button>
+                {/* Rating */}
+                <div className="absolute top-3 left-3">
+                  <RatingCircle rating={movie.vote_average} size={36} />
+                </div>
+                {/* Gradiente inferior para mejor legibilidad del año */}
+                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
               </div>
-              <div className="p-4 dark:text-white">
-                <h2 className="text-base sm:text-xl font-semibold mb-2 line-clamp-2">
+              <div className="pt-3 px-1">
+                <h2 className="text-base font-bold text-white line-clamp-2 mb-1 leading-tight">
                   {movie.title}
                 </h2>
-                <p className="dark:text-white mb-2 text-xs sm:text-sm">
+                <p className="text-sm text-gray-400 font-medium">
                   {new Date(movie.release_date).toLocaleDateString("es-ES", {
                     month: "long",
-                    day: "numeric",
                     year: "numeric",
                   })}
                 </p>
-                <div className="flex flex-row justify-evenly text-sm text-center dark:text-white">
-                  <div className="flex flex-col items-center">
-                    <RatingCircle rating={movie.vote_average} size={40} />
-                    <p className="mt-1">Rating</p>
-                  </div>
-                  <button
-                    onClick={(e) => handleFavoriteClick(e, movie)}
-                    className="flex flex-col items-center transition-transform duration-200 hover:scale-110"
-                    title={
-                      isMovieFavorite(movie.id)
-                        ? "Quitar de favoritos"
-                        : "Agregar a favoritos"
-                    }
-                  >
-                    <Image
-                      src={
-                        isMovieFavorite(movie.id)
-                          ? "/favorite-filled.svg"
-                          : "/favorite.svg"
-                      }
-                      alt="Favorite icon"
-                      className="dark:invert transition-opacity duration-200 hover:opacity-80"
-                      width={26}
-                      height={26}
-                      priority
-                    />
-                    <span className="mt-1">
-                      {isMovieFavorite(movie.id) ? "Guardada" : "Guardar"}
-                    </span>
-                  </button>
-                </div>
               </div>
             </div>
           ))}
@@ -194,46 +203,28 @@ export default function Home() {
           />
         )}
 
-        {currentPage < totalPages && filteredMovies.length > 0 && (
-          <div className="flex justify-center mt-8">
+        {/* Paginación con botones anterior y siguiente */}
+        {totalPages > 1 && filteredMovies.length > 0 && (
+          <div className="flex justify-center items-center mt-8 space-x-4">
             <button
-              onClick={loadMoreMovies}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isLoading}
+              onClick={goToPreviousPage}
+              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={currentPage === 1 || isLoading}
             >
-              {isLoading ? (
-                <span className="flex items-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Cargando...
-                </span>
-              ) : (
-                "Cargar más películas"
-              )}
+              Anterior
+            </button>         
+            <button
+              onClick={goToNextPage}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={currentPage === totalPages || isLoading}
+            >
+              Siguiente
             </button>
           </div>
         )}
 
         {filteredMovies.length === 0 && !isLoading && (
-          <div className="text-center py-10 dark:text-white">
+          <div className="text-center py-10 text-white">
             <p className="text-xl font-semibold">No se encontraron películas</p>
             <p className="mt-2">
               Intenta con otros términos de búsqueda o filtros
